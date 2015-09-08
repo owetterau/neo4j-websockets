@@ -24,7 +24,7 @@ import org.neo4j.graphdb.config.Setting;
 import java.util.Map;
 
 public class ExampleStarter extends Starter {
-    public SabyloStarter(Class embeddedNeo4jClass, Configurer configurer, Map<Setting,String> settings) throws Exception{
+    public ExampleStarter(Class embeddedNeo4jClass, Configurer configurer, Map<Setting,String> settings) throws Exception{
         super(embeddedNeo4jClass, configurer, settings);
 
         Schema.readSchemaAnnotations();
@@ -152,7 +152,7 @@ public class ExampleNeo4jConfigurer implements Configurer {
 
     @Override
     public void init(final Map<Setting,String> settings) {
-        SabyloNeo4jConfigurer.settings = settings;
+        ExampleNeo4jConfigurer.settings = settings;
 
         highAvailabilityId = Integer.parseInt(settings.get(ClusterSettings.server_id));
         storagePath = settings.get(GraphDatabaseSettings.store_dir);
