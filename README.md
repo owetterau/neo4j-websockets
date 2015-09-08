@@ -41,7 +41,7 @@ public class ExampleStarter extends Starter {
 }
 ```
 
-The *Starter* used in the example application extends the the default starter logic with reading annotations and warming
+The *Starter* used in the example application extends the default starter logic with reading annotations and warming
 up the database after creation.
 
 A call of the derived starter may look like this (it is important to add the framework to the list of packages being
@@ -208,7 +208,7 @@ public class ExampleNeo4jConfigurer implements Configurer {
 ```
 
 Probably the most important part of the *Configurer* class is the *getGraphDatabase* method as this is the place where
-the neo4j instance is being created.
+the Neo4j instance is being created.
 
 ### Websocket messages handling
 
