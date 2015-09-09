@@ -20,12 +20,13 @@ import java.util.concurrent.ConcurrentSkipListSet;
  * Holds information about a Neo4j server and manages available and used connections to this server.
  *
  * @author Oliver Wetterau
- * @version 2015-02-11
+ * @version 2015-09-01
  */
 public class Server implements Comparable<Server> {
     private static final Logger logger = LoggerFactory.getLogger(Server.class);
     protected static JsonObjectMapper jsonObjectMapper;
 
+    /** language settings */
     protected final ThreadLocale threadLocale;
     /** uri to be used for management connection */
     protected final String managementUri;
@@ -47,6 +48,7 @@ public class Server implements Comparable<Server> {
      * Constructor
      * @param clusterListener listener that will be informed about changes in the cluster configuration
      * @param uri base uri of the Neo4j server
+     * @param threadLocale language settings
      */
     public Server(final ClusterListener clusterListener, final String uri, final ThreadLocale threadLocale) {
         this.managementUri = uri + "/" + WebsocketSettings.MANAGEMENT_CONNECTION;
@@ -56,6 +58,10 @@ public class Server implements Comparable<Server> {
         this.managementConnection = new ManagementConnection(clusterListener, managementUri);
     }
 
+    /**
+     * Sets the wrapper for a json object mapper
+     * @param jsonObjectMapper wrapper for a json object mapper
+     */
     public static void setJsonObjectMapper(JsonObjectMapper jsonObjectMapper) {
         Server.jsonObjectMapper = jsonObjectMapper;
     }
@@ -99,6 +105,9 @@ public class Server implements Comparable<Server> {
         register();
     }
 
+    /**
+     * Registers with the Neo4j server and saves some Neo4j server information with this object.
+     */
     public void register() {
         logger.debug("[register] uri = {}", getManagementUri());
 

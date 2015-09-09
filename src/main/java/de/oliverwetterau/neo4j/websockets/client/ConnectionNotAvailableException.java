@@ -1,7 +1,10 @@
 package de.oliverwetterau.neo4j.websockets.client;
 
 /**
- * Created by oliver on 01.09.15.
+ * This exception will be thrown when a server is not available.
+ *
+ * @author Oliver Wetterau
+ * @version 2015-09-01
  */
 public class ConnectionNotAvailableException extends Exception {
     protected Server server;

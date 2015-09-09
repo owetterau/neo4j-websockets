@@ -15,23 +15,26 @@ import java.util.concurrent.TimeUnit;
  * A single data connection to a Neo4j server.
  *
  * @author Oliver Wetterau
- * @version 2015-02-11
+ * @version 2015-09-01
  */
 public class DataConnection implements Comparable<DataConnection> {
     private static Logger logger = LoggerFactory.getLogger(DataConnection.class);
-    protected static int WEBSOCKET_TIMEOUT = 600; //15;
+    protected static int WEBSOCKET_TIMEOUT = 15;
+    protected static int ANSWER_TIMEOUT = 600;
     protected static long MAXIMUM_AGE_IN_MINUTES = 10;
 
     protected final WebSocketConnectionManager webSocketConnectionManager;
     protected final WebSocketClient webSocketClient;
     protected final WebSocketHandler webSocketHandler;
 
+    /** unique identifier of this connection */
     protected final UUID uuid;
     /** uri of Neo4j server to be used */
     protected final String uriTemplate;
     /** date and time of last usage of this connection */
     protected Date lastUsage;
 
+    /** language settings */
     protected Locale locale;
 
     /**
@@ -95,6 +98,10 @@ public class DataConnection implements Comparable<DataConnection> {
         this.lastUsage = lastUsage;
     }
 
+    /**
+     * Set the language settings for this data connection
+     * @param locale language settings
+     */
     public void setLocale(final Locale locale) {
         this.locale = locale;
         webSocketHandler.setLocale(locale);
@@ -134,7 +141,7 @@ public class DataConnection implements Comparable<DataConnection> {
             webSocketHandler.sendMessage(message);
 
             try {
-                webSocketHandler.getNotifyResultObject().wait(TimeUnit.SECONDS.toMillis(WEBSOCKET_TIMEOUT));
+                webSocketHandler.getNotifyResultObject().wait(TimeUnit.SECONDS.toMillis(ANSWER_TIMEOUT));
             }
             catch (InterruptedException e) {
                 return null;

@@ -40,6 +40,8 @@ public class Database implements ClusterListener {
     /**
      * Constructor
      * @param serverUri class which returns a list of Neo4j server URIs
+     * @param jsonObjectMapper json serialization
+     * @param threadLocale language settings
      */
     @Autowired
     public Database(final ServerUri serverUri, final JsonObjectMapper jsonObjectMapper, final ThreadLocale threadLocale) {
@@ -132,6 +134,7 @@ public class Database implements ClusterListener {
                 server.connect();
             }
             catch (Exception e) {
+                logger.error("[onServerAvailable]", e);
             }
         }
 
@@ -208,7 +211,7 @@ public class Database implements ClusterListener {
             }
 
             if (writeServer == null) {
-                newReadServers = new Server[0];
+                readServers = new Server[0];
                 return;
             }
         }
@@ -290,12 +293,18 @@ public class Database implements ClusterListener {
     /**
      * Sends a message (which will probably create a write access) to the Neo4j cluster.
      * @param message binary json message (usually json format)
-     * @throws Exception exception
+     * @throws ConnectionNotAvailableException no connection to server exception
      */
     public void sendWriteMessage(final byte[] message) throws ConnectionNotAvailableException {
         sendWriteMessage(message, getWriteServer());
     }
 
+    /**
+     * Sends a message (which will probably create a write access) to the Neo4j cluster.
+     * @param message binary json message (usually json format)
+     * @param server server that shall be used to send the message
+     * @throws ConnectionNotAvailableException no connection to server exception
+     */
     public void sendWriteMessage(final byte[] message, final Server server) throws ConnectionNotAvailableException {
         DataConnection connection = server.getConnection();
 
@@ -312,12 +321,19 @@ public class Database implements ClusterListener {
      * Sends a message (which will probably create a write access) to the Neo4j cluster and waits for a reply.
      * @param message binary json message (usually json format)
      * @return result text message (usually json format)
-     * @throws Exception exception
+     * @throws ConnectionNotAvailableException no connection to server exception
      */
     public byte[] sendWriteMessageWithResult(byte[] message) throws ConnectionNotAvailableException {
         return sendWriteMessageWithResult(message, getWriteServer());
     }
 
+    /**
+     * Sends a message (which will probably create a write access) to the Neo4j cluster and waits for a reply.
+     * @param message binary json message (usually json format)
+     * @param server server that shall be used to send the message
+     * @return result text message (usually json format)
+     * @throws ConnectionNotAvailableException no connection to server exception
+     */
     public byte[] sendWriteMessageWithResult(final byte[] message, final Server server) throws ConnectionNotAvailableException {
         DataConnection connection = server.getConnection();
 
@@ -336,12 +352,19 @@ public class Database implements ClusterListener {
      * Sends a message (only read access) to the Neo4j cluster and waits for a reply.
      * @param message binary json message
      * @return result binary json message
-     * @throws Exception exception
+     * @throws ConnectionNotAvailableException no connection to server exception
      */
     public byte[] sendReadMessage(final byte[] message) throws ConnectionNotAvailableException {
         return sendReadMessage(message, getReadServer());
     }
 
+    /**
+     * Sends a message (only read access) to the Neo4j cluster and waits for a reply.
+     * @param message binary json message
+     * @param server server that shall be used to send the message
+     * @return result binary json message
+     * @throws ConnectionNotAvailableException no connection to server exception
+     */
     public byte[] sendReadMessage(final byte[] message, final Server server) throws ConnectionNotAvailableException{
         DataConnection connection = server.getConnection();
 

@@ -6,7 +6,7 @@
 
     <groupId>de.oliverwetterau.neo4j</groupId>
     <artifactId>websockets</artifactId>
-    <version>0.8.16</version>
+    <version>0.8.17</version>
     <packaging>pom</packaging>
 
     <modules>
