@@ -24,7 +24,7 @@ import org.neo4j.graphdb.config.Setting;
 import java.util.Map;
 
 public class ExampleStarter extends Starter {
-    public ExampleStarter(Class embeddedNeo4jClass, Configurer configurer, Map<Setting,String> settings) throws Exception{
+    public SabyloStarter(Class embeddedNeo4jClass, Configurer configurer, Map<Setting,String> settings) throws Exception{
         super(embeddedNeo4jClass, configurer, settings);
 
         Schema.readSchemaAnnotations();
@@ -152,7 +152,7 @@ public class ExampleNeo4jConfigurer implements Configurer {
 
     @Override
     public void init(final Map<Setting,String> settings) {
-        ExampleNeo4jConfigurer.settings = settings;
+        SabyloNeo4jConfigurer.settings = settings;
 
         highAvailabilityId = Integer.parseInt(settings.get(ClusterSettings.server_id));
         storagePath = settings.get(GraphDatabaseSettings.store_dir);
@@ -371,6 +371,21 @@ The parameters are being used as follows:
 * `method` is the name of the method of the corresponding service which must be annotated with *@MessageMethod*.
 * `parameters` is a json node that can be used to pass any data to the called method.
 * `locale` is the locale that shall be used on the server side when serializing the answer.
+
+How to use it
+=============
+### Framework JAR's
+When compiling this project, Maven will create two jars:
+- neo4j-websockets-server.jar
+- neo4j-websockets-client.jar
+
+which need to be used by the data servers (neo4j-websockets-server.jar) and the web servers
+(neo4j-websockets-client.jar).
+
+### Example Project
+An example project using this framework can be found here:
+
+https://github.com/owetterau/neo4j-websockets-example
 
 Some Final Thoughts
 -------------------
