@@ -5,11 +5,11 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>de.oliverwetterau.neo4j</groupId>
-    <artifactId>websockets-client</artifactId>
+    <artifactId>websockets-core</artifactId>
     <version>0.9.0</version>
     <packaging>jar</packaging>
 
-    <name>Neo4j Websockets Client/Server Framework - Client Library</name>
+    <name>Neo4j Websockets Client/Server Framework - Core Library</name>
     <description>
         This framework allows to connect clients with embedded Neo4j servers through websockets. Furthermore it offers
         high availability and load balancing to the clients when using Neo4j in a cluster.
@@ -37,27 +37,47 @@
         <java.version>1.8</java.version>
         <complianceLevel>${java.version}</complianceLevel>
 
-        <neo4j.websockets.version>0.9.0</neo4j.websockets.version>
         <spring.version>4.1.7.RELEASE</spring.version>
+        <jackson.version>2.6.2</jackson.version>
+        <sl4j.version>1.7.12</sl4j.version>
         <junit.version>4.12</junit.version>
     </properties>
 
     <dependencies>
         <dependency>
-            <groupId>de.oliverwetterau.neo4j</groupId>
-            <artifactId>websockets-core</artifactId>
-            <version>${neo4j.websockets.version}</version>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-context</artifactId>
+            <version>${spring.version}</version>
         </dependency>
 
         <dependency>
-            <groupId>org.springframework</groupId>
-            <artifactId>spring-websocket</artifactId>
-            <version>${spring.version}</version>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+            <version>${jackson.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.fasterxml.jackson.dataformat</groupId>
+            <artifactId>jackson-dataformat-smile</artifactId>
+            <version>${jackson.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+            <version>${sl4j.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>${junit.version}</version>
+            <scope>test</scope>
         </dependency>
     </dependencies>
 
     <build>
-        <finalName>neo4j-websockets-client</finalName>
+        <finalName>neo4j-websockets-core</finalName>
 
         <plugins>
             <plugin>

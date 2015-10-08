@@ -4,27 +4,53 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <parent>
-        <groupId>de.oliverwetterau.neo4j</groupId>
-        <artifactId>websockets</artifactId>
-        <version>0.8.17</version>
-    </parent>
-
+    <groupId>de.oliverwetterau.neo4j</groupId>
     <artifactId>websockets-server</artifactId>
+    <version>0.9.0</version>
     <packaging>jar</packaging>
+
+    <name>Neo4j Websockets Client/Server Framework - Server Library</name>
+    <description>
+        This framework allows to connect clients with embedded Neo4j servers through websockets. Furthermore it offers
+        high availability and load balancing to the clients when using Neo4j in a cluster.
+    </description>
+    <url>https://github.com/owetterau/neo4j-websockets</url>
+    <licenses>
+        <license>
+            <name>GNU LESSER GENERAL PUBLIC LICENSE - Version 3, 29 June 2007</name>
+            <url>http://www.gnu.org/licenses/lgpl-3.0.de.html</url>
+        </license>
+    </licenses>
+    <developers>
+        <developer>
+            <name>Oliver Wetterau</name>
+        </developer>
+    </developers>
+    <scm>
+        <url>https://github.com/owetterau/neo4j-websockets.git</url>
+        <connection>scm:git:git://github.com/owetterau/neo4j-websockets.git</connection>
+        <developerConnection>scm:git:git@github.com:owetterau/neo4j-websockets.git</developerConnection>
+    </scm>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <java.version>1.8</java.version>
         <complianceLevel>${java.version}</complianceLevel>
 
+        <neo4j.websockets.version>0.9.0</neo4j.websockets.version>
         <neo4j.version>2.2.5</neo4j.version>
-        <spring.websocket.version>4.1.7.RELEASE</spring.websocket.version>
-        <jackson.version>2.6.1</jackson.version>
-        <sl4j.version>1.7.12</sl4j.version>
+        <spring.version>4.1.7.RELEASE</spring.version>
+        <aspectj.version>1.8.7</aspectj.version>
+        <junit.version>4.12</junit.version>
     </properties>
 
     <dependencies>
+        <dependency>
+            <groupId>de.oliverwetterau.neo4j</groupId>
+            <artifactId>websockets-core</artifactId>
+            <version>${neo4j.websockets.version}</version>
+        </dependency>
+
         <dependency>
             <groupId>org.neo4j</groupId>
             <artifactId>neo4j-enterprise</artifactId>
@@ -42,40 +68,24 @@
         <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-websocket</artifactId>
-            <version>${spring.websocket.version}</version>
+            <version>${spring.version}</version>
         </dependency>
 
         <dependency>
-            <groupId>com.fasterxml.jackson.core</groupId>
-            <artifactId>jackson-databind</artifactId>
-            <version>${jackson.version}</version>
+            <groupId>org.aspectj</groupId>
+            <artifactId>aspectjweaver</artifactId>
+            <version>${aspectj.version}</version>
         </dependency>
 
         <dependency>
-            <groupId>com.fasterxml.jackson.dataformat</groupId>
-            <artifactId>jackson-dataformat-smile</artifactId>
-            <version>${jackson.version}</version>
-        </dependency>
-
-        <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-api</artifactId>
-            <version>${sl4j.version}</version>
-        </dependency>
-
-        <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
-            <version>${junit.version}</version>
-            <scope>test</scope>
+            <groupId>org.aspectj</groupId>
+            <artifactId>aspectjtools</artifactId>
+            <version>${aspectj.version}</version>
         </dependency>
     </dependencies>
 
     <build>
         <finalName>neo4j-websockets-server</finalName>
-
-        <sourceDirectory>../src/main/java</sourceDirectory>
-        <testSourceDirectory>../src/test/java</testSourceDirectory>
 
         <plugins>
             <plugin>
@@ -86,10 +96,6 @@
                     <compilerVersion>${java.version}</compilerVersion>
                     <source>${java.version}</source>
                     <target>${java.version}</target>
-                    <includes>
-                        <include>**/core/**</include>
-                        <include>**/server/**</include>
-                    </includes>
                 </configuration>
             </plugin>
 
@@ -115,6 +121,42 @@
                         <goals><goal>jar</goal></goals>
                     </execution>
                 </executions>
+            </plugin>
+
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>aspectj-maven-plugin</artifactId>
+                <version>1.7</version>
+                <configuration>
+                    <source>${java.version}</source>
+                    <target>${java.version}</target>
+                    <complianceLevel>${java.version}</complianceLevel>
+                    <encoding>${project.build.sourceEncoding}</encoding>
+                    <showWeaveInfo>true</showWeaveInfo>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>compile</id>
+                        <phase>process-classes</phase>
+                        <goals>
+                            <goal>compile</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>test-compile</id>
+                        <phase>process-test-classes</phase>
+                        <goals>
+                            <goal>test-compile</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <dependencies>
+                    <dependency>
+                        <groupId>org.aspectj</groupId>
+                        <artifactId>aspectjweaver</artifactId>
+                        <version>1.8.5</version>
+                    </dependency>
+                </dependencies>
             </plugin>
         </plugins>
     </build>
