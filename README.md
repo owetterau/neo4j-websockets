@@ -5,6 +5,12 @@ availability and load balancing to the clients when using Neo4j in a cluster.
 
 Spring Framework is used for dependency injection and websocket communication.
 
+Jar files for the framework are available from Maven Central Repository:
+[maven.org - neo4j-websockets](http://search.maven.org/#search%7Cga%7C1%7Cg%3A%22de.oliverwetterau.neo4j%22)
+
+An example project showing the use of client and server part of the framework can be found here:
+[github - neo4j-websockets-example](https://github.com/owetterau/neo4j-websockets-example)
+
 Server
 ------
 ### Configuration and startup
@@ -372,15 +378,15 @@ The parameters are being used as follows:
 * `parameters` is a json node that can be used to pass any data to the called method.
 * `locale` is the locale that shall be used on the server side when serializing the answer.
 
-How to use it
+How to Use it
 =============
-### Framework JAR's
-When compiling this project, Maven will create two jars:
-- neo4j-websockets-server.jar
-- neo4j-websockets-client.jar
+You can find a description of how to use this framework and an example project here:
 
-which need to be used by the data servers (neo4j-websockets-server.jar) and the web servers
-(neo4j-websockets-client.jar).
+[How to - Server](https://github.com/owetterau/neo4j-websockets-example/blob/master/server/README.md)
+
+[How to - Client](https://github.com/owetterau/neo4j-websockets-example/blob/master/client/README.md)
+
+[Example Project](https://github.com/owetterau/neo4j-websockets-example)
 
 ### Example Project
 An example project using this framework can be found here:
