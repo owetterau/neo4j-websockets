@@ -1,4 +1,4 @@
-package de.oliverwetterau.neo4j.websockets.client;
+package de.oliverwetterau.neo4j.websockets.client.server;
 
 /**
  * This interface shall be used to inform the client about Neo4j cluster availability changes.

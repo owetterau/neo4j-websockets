@@ -5,28 +5,29 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>de.oliverwetterau.neo4j</groupId>
-    <artifactId>websockets-server</artifactId>
+    <artifactId>websocket-examples-server</artifactId>
     <version>0.9.1</version>
+    <packaging>jar</packaging>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <java.version>1.7</java.version>
         <complianceLevel>${java.version}</complianceLevel>
 
+        <websockets.version>0.9.1</websockets.version>
         <neo4j.version>2.3.1</neo4j.version>
         <spring.version>4.1.8.RELEASE</spring.version>
-        <undertow.version>1.3.5.Final</undertow.version>
         <aspectj.version>1.8.7</aspectj.version>
         <junit.version>4.12</junit.version>
     </properties>
 
     <dependencies>
-        <!-- WebSockets ******************************************************************************************** -->
+        <!-- Neo4j Websockets Plugin ******************************************************************************* -->
 
         <dependency>
             <groupId>de.oliverwetterau.neo4j</groupId>
-            <artifactId>websockets-core</artifactId>
-            <version>${version}</version>
+            <artifactId>websockets-server</artifactId>
+            <version>${websockets.version}</version>
         </dependency>
 
         <!-- Neo4j ************************************************************************************************* -->
@@ -59,30 +60,6 @@
             <scope>provided</scope>
         </dependency>
 
-        <!-- Spring ************************************************************************************************ -->
-
-        <dependency>
-            <groupId>org.springframework</groupId>
-            <artifactId>spring-context</artifactId>
-            <version>${spring.version}</version>
-        </dependency>
-
-        <!-- Web Server ******************************************************************************************** -->
-
-        <dependency>
-            <groupId>io.undertow</groupId>
-            <artifactId>undertow-websockets-jsr</artifactId>
-            <version>${undertow.version}</version>
-        </dependency>
-
-        <!-- Aspects *********************************************************************************************** -->
-
-        <dependency>
-            <groupId>org.aspectj</groupId>
-            <artifactId>aspectjtools</artifactId>
-            <version>${aspectj.version}</version>
-        </dependency>
-
         <!-- Testing *********************************************************************************************** -->
 
         <dependency>
@@ -101,13 +78,7 @@
     </dependencies>
 
     <build>
-        <finalName>neo4j-websockets-server</finalName>
-
-        <resources>
-            <resource>
-                <directory>src/main/resources</directory>
-            </resource>
-        </resources>
+        <finalName>neo4j-websockets-example</finalName>
 
         <plugins>
             <plugin>
@@ -121,7 +92,7 @@
                 </configuration>
             </plugin>
 
-            <!--<plugin>
+            <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-shade-plugin</artifactId>
                 <version>2.4.2</version>
@@ -151,30 +122,6 @@
                         </configuration>
                     </execution>
                 </executions>
-            </plugin>-->
-
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-source-plugin</artifactId>
-                <version>2.4</version>
-                <executions>
-                    <execution>
-                        <id>attach-sources</id>
-                        <goals><goal>jar</goal></goals>
-                    </execution>
-                </executions>
-            </plugin>
-
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-javadoc-plugin</artifactId>
-                <version>2.10.3</version>
-                <executions>
-                    <execution>
-                        <id>attach-javadocs</id>
-                        <goals><goal>jar</goal></goals>
-                    </execution>
-                </executions>
             </plugin>
 
             <plugin>
@@ -187,6 +134,12 @@
                     <complianceLevel>${java.version}</complianceLevel>
                     <encoding>${project.build.sourceEncoding}</encoding>
                     <showWeaveInfo>true</showWeaveInfo>
+                    <weaveDependencies>
+                        <dependency>
+                            <groupId>de.oliverwetterau.neo4j</groupId>
+                            <artifactId>websockets-server</artifactId>
+                        </dependency>
+                    </weaveDependencies>
                 </configuration>
                 <executions>
                     <execution>

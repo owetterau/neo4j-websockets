@@ -1,7 +1,6 @@
 package de.oliverwetterau.neo4j.websockets.core.data;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import de.oliverwetterau.neo4j.websockets.core.data.json.JsonObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -74,9 +73,13 @@ public class Result<T> {
         Result.jsonObjectMapper = jsonObjectMapper;
     }
 
-    public void add(final Error error) {
+    protected void setDirty() {
         isStringDirty = true;
         isBytesDirty = true;
+    }
+
+    public void add(final Error error) {
+        setDirty();
         if (errors == null) {
             errors = new ArrayList<>();
         }
@@ -84,8 +87,7 @@ public class Result<T> {
     }
 
     public void addErrors(final Collection<Error> errors) {
-        isStringDirty = true;
-        isBytesDirty = true;
+        setDirty();
         if (this.errors == null) {
             this.errors = new ArrayList<>();
         }
@@ -107,15 +109,15 @@ public class Result<T> {
     }
 
     public void add(final T object) {
-        isStringDirty = true;
-        isBytesDirty = true;
+        setDirty();
         data.add(object);
     }
 
     public void add(final Collection<T> objects) {
-        isStringDirty = true;
-        isBytesDirty = true;
-        errors.forEach(this::add);
+        setDirty();
+        for (T object : objects) {
+            data.add(object);
+        }
     }
 
     public List<T> getData() {
@@ -123,6 +125,9 @@ public class Result<T> {
     }
 
     public T getSingleData() {
+        if (data.size() == 0) {
+            return null;
+        }
         return data.get(0);
     }
 
@@ -130,24 +135,43 @@ public class Result<T> {
         return errors == null || errors.size() == 0;
     }
 
-    public void close() {
-        toJsonBytes();
+    public void close() throws Exception {
+        if (!isOk()) {
+            data.clear();
+        }
+
+        generateJsonString();
+        generateJsonBytes();
+    }
+
+    protected void generateJsonString() throws Exception {
+        jsonString = jsonObjectMapper.getObjectMapperText().writeValueAsString(this);
+        isStringDirty = false;
     }
 
     @JsonIgnore
-    public byte[] toJsonBytes() {
+    public String toJsonString() throws Exception {
+        if (!isStringDirty) {
+            return jsonString;
+        }
+
+        generateJsonString();
+
+        return jsonString;
+    }
+
+    protected void generateJsonBytes() throws Exception {
+        jsonBytes = jsonObjectMapper.getObjectMapperBinary().writeValueAsBytes(this);
+        isBytesDirty = false;
+    }
+
+    @JsonIgnore
+    public byte[] toJsonBytes() throws Exception {
         if (!isBytesDirty) {
             return jsonBytes;
         }
 
-        try {
-            jsonBytes = jsonObjectMapper.getObjectMapper().writeValueAsBytes(this);
-            isBytesDirty = false;
-        }
-        catch (JsonProcessingException e) {
-            logger.error("[toJsonBytes]", e);
-            return null;
-        }
+        generateJsonBytes();
 
         return jsonBytes;
     }

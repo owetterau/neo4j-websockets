@@ -1,13 +1,12 @@
 package de.oliverwetterau.neo4j.websockets.server.aspects;
 
-import de.oliverwetterau.neo4j.websockets.core.data.Result;
 import de.oliverwetterau.neo4j.websockets.server.annotations.Propagation;
 import de.oliverwetterau.neo4j.websockets.server.annotations.Transactional;
-import de.oliverwetterau.neo4j.websockets.server.neo4j.EmbeddedNeo4j;
-import de.oliverwetterau.neo4j.websockets.server.neo4j.EmbeddedNeo4jBuilder;
+import de.oliverwetterau.neo4j.websockets.core.data.Result;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
+import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Transaction;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -22,7 +21,7 @@ import java.util.ArrayDeque;
 @Aspect
 public class DatabaseCallAspect {
     private static Logger logger = LoggerFactory.getLogger(DatabaseCallAspect.class);
-    protected static EmbeddedNeo4j embeddedNeo4j;
+    private static GraphDatabaseService graphDatabaseService;
 
     /**
      * Holds a list of nested transactions and their statuses (success / failure) for the current thread.
@@ -34,7 +33,7 @@ public class DatabaseCallAspect {
         }
 
         /** FiLo-List of all transactions */
-        protected ArrayDeque<CurrentTransaction> transactions = new ArrayDeque<>();
+        private ArrayDeque<CurrentTransaction> transactions = new ArrayDeque<>();
 
         /**
          * Begins a transaction
@@ -48,7 +47,7 @@ public class DatabaseCallAspect {
 
             if (transactions.isEmpty() || propagation.equals(Propagation.REQUIRES_NEW)) {
                 currentTransaction = new CurrentTransaction();
-                currentTransaction.transaction = getEmbeddedNeo4j().getDatabase().beginTx();
+                currentTransaction.transaction = graphDatabaseService.beginTx();
                 currentTransaction.success = true;
                 transactions.addLast(currentTransaction);
 
@@ -66,6 +65,7 @@ public class DatabaseCallAspect {
          * Marks a transaction as failed.
          */
         public void failure() {
+            logger.debug("[failure]");
             transactions.getLast().success = false;
         }
 
@@ -77,9 +77,11 @@ public class DatabaseCallAspect {
             Transaction transaction = currentTransaction.transaction;
 
             if (currentTransaction.success) {
+                logger.debug("[close] Transaction success");
                 transaction.success();
             }
             else {
+                logger.debug("[close] Transaction failure");
                 transaction.failure();
             }
 
@@ -99,7 +101,7 @@ public class DatabaseCallAspect {
     }
 
     /** List of transactions linked to current thread */
-    protected ThreadLocal<TransactionHolder> transactionHolderThreadLocal = new ThreadLocal<>();
+    private ThreadLocal<TransactionHolder> transactionHolderThreadLocal = new ThreadLocal<>();
 
     /**
      * Wraps transactional logic around methods annotated with "@Transaction"
@@ -137,27 +139,30 @@ public class DatabaseCallAspect {
             if (value != null) {
                 if (Result.class.isAssignableFrom(value.getClass())) {
                     result = (Result) value;
+
+                    if (isNewTransaction) {
+                        // create json value of result to prevent another access to Neo4j when requesting json value of
+                        // result as result.toJsonString() will otherwise access to entities will thrown an exception
+                        // when not in a transaction - without a change on Result toString will cache the json value
+                        // created in toString()
+                        result.close();
+                    }
+
                     if (!result.isOk()) {
                         transactionHolder.failure();
                     }
                 }
             }
         }
-        catch (Throwable e) {
+        catch (Exception e) {
+            logger.error("[databaseCallAroundAdvice] exception", e);
             throwable = e;
             transactionHolder.failure();
-
-            logger.error("[databaseCallAroundAdvice]", e);
         }
-
-        if (isNewTransaction) {
-            if (result != null) {
-                // create json value of result to prevent another access to Neo4j when requesting json value of result
-                // as result.toJsonString() will otherwise access to entities will thrown an exception when not in a
-                // transaction - without a change on Result toString will cache the json value created in toString()
-                result.close();
+        finally {
+            if (isNewTransaction) {
+                transactionHolder.close();
             }
-            transactionHolder.close();
         }
 
         if (throwable != null) {
@@ -169,11 +174,7 @@ public class DatabaseCallAspect {
         return value;
     }
 
-    protected EmbeddedNeo4j getEmbeddedNeo4j() {
-        if (embeddedNeo4j == null) {
-            embeddedNeo4j = EmbeddedNeo4jBuilder.getNeo4j();
-        }
-
-        return embeddedNeo4j;
+    public static void setGraphDatabaseService(GraphDatabaseService graphDatabaseService) {
+        DatabaseCallAspect.graphDatabaseService = graphDatabaseService;
     }
 }

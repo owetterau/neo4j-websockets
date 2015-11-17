@@ -1,5 +1,7 @@
-package de.oliverwetterau.neo4j.websockets.client;
+package de.oliverwetterau.neo4j.websockets.client.web;
 
+import de.oliverwetterau.neo4j.websockets.client.server.ClusterListener;
+import de.oliverwetterau.neo4j.websockets.client.server.ConnectionListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.web.socket.client.WebSocketClient;

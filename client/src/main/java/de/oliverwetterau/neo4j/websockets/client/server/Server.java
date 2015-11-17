@@ -1,11 +1,13 @@
-package de.oliverwetterau.neo4j.websockets.client;
+package de.oliverwetterau.neo4j.websockets.client.server;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import de.oliverwetterau.neo4j.websockets.client.ApplicationSettings;
+import de.oliverwetterau.neo4j.websockets.client.web.DataConnection;
+import de.oliverwetterau.neo4j.websockets.client.web.ManagementConnection;
 import de.oliverwetterau.neo4j.websockets.core.data.CommandParameters;
 import de.oliverwetterau.neo4j.websockets.core.data.json.JsonObjectMapper;
-import de.oliverwetterau.neo4j.websockets.core.helpers.WebsocketSettings;
 import de.oliverwetterau.neo4j.websockets.core.i18n.ThreadLocale;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -44,16 +46,21 @@ public class Server implements Comparable<Server> {
     /** management connection to this server */
     protected final ManagementConnection managementConnection;
 
+    /** binary or text web socket connection? */
+    protected final boolean isBinary;
+
     /**
      * Constructor
      * @param clusterListener listener that will be informed about changes in the cluster configuration
      * @param uri base uri of the Neo4j server
      * @param threadLocale language settings
+     * @param isBinary use binary or text format?
      */
-    public Server(final ClusterListener clusterListener, final String uri, final ThreadLocale threadLocale) {
-        this.managementUri = uri + "/" + WebsocketSettings.MANAGEMENT_CONNECTION;
-        this.dataUri = uri + "/" + WebsocketSettings.COMMAND_CONNECTION;
+    public Server(final ClusterListener clusterListener, final String uri, final ThreadLocale threadLocale, final boolean isBinary) {
+        this.managementUri = uri + ApplicationSettings.managementPath();
+        this.dataUri = uri + ApplicationSettings.dataPath();
         this.threadLocale = threadLocale;
+        this.isBinary = isBinary;
 
         this.managementConnection = new ManagementConnection(clusterListener, managementUri);
     }
@@ -95,14 +102,11 @@ public class Server implements Comparable<Server> {
      * @throws Exception exception
      */
     public void connect() throws Exception {
-        if (id.length() > 0) {
-            managementConnection.connect();
-            return;
-        }
-
         managementConnection.connect();
 
-        register();
+        if (id.length() == 0) {
+            register();
+        }
     }
 
     /**
@@ -112,7 +116,7 @@ public class Server implements Comparable<Server> {
         logger.debug("[register] uri = {}", getManagementUri());
 
         JsonNode jsonNode;
-        ObjectMapper objectMapper = jsonObjectMapper.getObjectMapper();
+        ObjectMapper objectMapper = jsonObjectMapper.getObjectMapperBinary();
         ObjectNode objectNode = objectMapper.createObjectNode();
         objectNode.put(CommandParameters.METHOD, "register");
 

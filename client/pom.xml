@@ -6,7 +6,7 @@
 
     <groupId>de.oliverwetterau.neo4j</groupId>
     <artifactId>websockets-client</artifactId>
-    <version>0.9.0</version>
+    <version>0.9.1</version>
     <packaging>jar</packaging>
 
     <name>Neo4j Websockets Client/Server Framework - Client Library</name>
@@ -37,8 +37,8 @@
         <java.version>1.8</java.version>
         <complianceLevel>${java.version}</complianceLevel>
 
-        <neo4j.websockets.version>0.9.0</neo4j.websockets.version>
-        <spring.version>4.1.7.RELEASE</spring.version>
+        <spring.version>4.1.8.RELEASE</spring.version>
+        <sl4j.version>1.7.6</sl4j.version>
         <junit.version>4.12</junit.version>
     </properties>
 
@@ -46,13 +46,20 @@
         <dependency>
             <groupId>de.oliverwetterau.neo4j</groupId>
             <artifactId>websockets-core</artifactId>
-            <version>${neo4j.websockets.version}</version>
+            <version>${version}</version>
         </dependency>
 
         <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-websocket</artifactId>
             <version>${spring.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+            <version>${sl4j.version}</version>
+            <scope>provided</scope>
         </dependency>
     </dependencies>
 

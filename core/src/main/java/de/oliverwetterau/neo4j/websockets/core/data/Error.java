@@ -43,7 +43,7 @@ public class Error {
      * @param details details of the error in json format
      */
     public Error(final String type, final String message, final JsonNode details) {
-        assert (type != null && message != null);
+        assert (type != null);
 
         objectNode = jsonObjectMapper.getObjectMapper().createObjectNode();
 

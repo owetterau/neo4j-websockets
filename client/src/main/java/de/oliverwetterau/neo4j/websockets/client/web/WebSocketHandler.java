@@ -1,11 +1,14 @@
-package de.oliverwetterau.neo4j.websockets.client;
+package de.oliverwetterau.neo4j.websockets.client.web;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import de.oliverwetterau.neo4j.websockets.client.server.ClusterListener;
+import de.oliverwetterau.neo4j.websockets.client.server.ConnectionListener;
 import de.oliverwetterau.neo4j.websockets.core.data.json.JsonObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.web.socket.BinaryMessage;
 import org.springframework.web.socket.CloseStatus;
+import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketSession;
 import org.springframework.web.socket.handler.TextWebSocketHandler;
 
@@ -99,18 +102,29 @@ public class WebSocketHandler extends TextWebSocketHandler {
         }
     }
 
-    /*@Override
-    public void handleTextMessage(final WebSocketSession webSocketSession, final TextMessage message) {
-        resultString = message.getPayload();
+    protected void handleMessage(final Object message, final boolean isBinary) {
+        if (isBinary) {
+            BinaryMessage binaryMessage = (BinaryMessage) message;
+            resultBytes = new byte[binaryMessage.getPayloadLength()];
+            binaryMessage.getPayload().get(resultBytes);
+        }
+        else {
+            resultString = ((TextMessage) message).getPayload();
+        }
 
         if (clusterListener != null) {
             JsonNode jsonNode = null;
 
             try {
-                jsonNode = jsonObjectMapper.getObjectMapper().readTree(resultString);
+                if (isBinary) {
+                    jsonNode = jsonObjectMapper.getObjectMapperBinary().readTree(resultBytes);
+                }
+                else {
+                    jsonNode = jsonObjectMapper.getObjectMapperText().readTree(resultString);
+                }
             }
             catch (Exception e) {
-                logger.error("[handleTextMessage]", e);
+                logger.error("[handleMessage]", e);
             }
 
             if (jsonNode != null) {
@@ -126,41 +140,34 @@ public class WebSocketHandler extends TextWebSocketHandler {
         synchronized (notifyResultObject) {
             notifyResultObject.notifyAll();
         }
-    }*/
+    }
 
     /**
-     * Handles incoming messages.
+     * Handles an incoming text messages.
+     * @param webSocketSession websocket session the message was received from
+     * @param message received message
+     */
+    @Override
+    public void handleTextMessage(final WebSocketSession webSocketSession, final TextMessage message) {
+        handleMessage(message, false);
+    }
+
+    /**
+     * Handles an incoming binary messages.
      * @param webSocketSession websocket session the message was received from
      * @param message received message
      */
     @Override
     public void handleBinaryMessage(final WebSocketSession webSocketSession, final BinaryMessage message) {
-        resultBytes = new byte[message.getPayloadLength()];
-        message.getPayload().get(resultBytes);
+        handleMessage(message, true);
+    }
 
-        if (clusterListener != null) {
-            JsonNode jsonNode = null;
-
-            try {
-                jsonNode = jsonObjectMapper.getObjectMapper().readTree(resultBytes);
-            }
-            catch (Exception e) {
-                logger.error("[handleBinaryMessage]", e);
-            }
-
-            if (jsonNode != null) {
-                if (jsonNode.has("available")) {
-                    clusterListener.onServerAvailable(jsonNode.get("available").asText(), jsonNode.get("role").asText());
-                }
-                else if (jsonNode.has("unavailable")) {
-                    clusterListener.onServerUnavailable(jsonNode.get("unavailable").asText());
-                }
-            }
-        }
-
-        synchronized (notifyResultObject) {
-            notifyResultObject.notifyAll();
-        }
+    /**
+     * Gets the result that was received in {@link #handleTextMessage}
+     * @return result that was received in {@link #handleTextMessage}
+     */
+    public String getResultString() {
+        return resultString;
     }
 
     /**
@@ -185,6 +192,19 @@ public class WebSocketHandler extends TextWebSocketHandler {
     }
 
     /**
+     * Sends a text message using this object's websocket session.
+     * @param message json binary message
+     */
+    public void sendMessage(final String message) {
+        try {
+            session.sendMessage(new TextMessage(message));
+        }
+        catch (IOException e) {
+            logger.error("[sendTextMessage]", e);
+        }
+    }
+
+    /**
      * Sends a binary message using this object's websocket session.
      * @param message json binary message
      */
@@ -193,7 +213,7 @@ public class WebSocketHandler extends TextWebSocketHandler {
             session.sendMessage(new BinaryMessage(message));
         }
         catch (IOException e) {
-            logger.error("[sendMessage(byte[])]", e);
+            logger.error("[sendBinaryMessage]", e);
         }
     }
 

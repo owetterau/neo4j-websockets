@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.dataformat.smile.SmileFactory;
 import de.oliverwetterau.neo4j.websockets.core.data.Result;
+import de.oliverwetterau.neo4j.websockets.core.helpers.ThreadBinary;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -19,7 +20,8 @@ import java.util.Map;
  */
 @Service
 public class JsonObjectMapper {
-    protected static final ObjectMapper objectMapper = new ObjectMapper(new SmileFactory());
+    protected static final ObjectMapper textObjectMapper = new ObjectMapper();
+    protected static final ObjectMapper binaryObjectMapper = new ObjectMapper(new SmileFactory());
 
     /**
      * Constructor
@@ -45,14 +47,31 @@ public class JsonObjectMapper {
             }
         }
 
-        objectMapper.registerModule(entityModule);
+        textObjectMapper.registerModule(entityModule);
+        binaryObjectMapper.registerModule(entityModule);
     }
 
     /**
-     * Returns an object mapper that can be used for serialization and deserialization.
+     * Returns an object mapper (using binary Smile format) that can be used for serialization and deserialization.
+     * @return object mapper
+     */
+    public ObjectMapper getObjectMapperBinary() {
+        return binaryObjectMapper;
+    }
+
+    /**
+     * Returns an object mapper (using String format) that can be used for serialization and deserialization.
+     * @return object mapper
+     */
+    public ObjectMapper getObjectMapperText() {
+        return textObjectMapper;
+    }
+
+    /**
+     * Returns an object mapper based on binary settings that can be used for serialization and deserialization.
      * @return object mapper
      */
     public ObjectMapper getObjectMapper() {
-        return objectMapper;
+        return ThreadBinary.isBinary() ? getObjectMapperBinary() : getObjectMapperText();
     }
 }

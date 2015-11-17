@@ -5,12 +5,11 @@ import de.oliverwetterau.neo4j.websockets.core.data.Error;
 import de.oliverwetterau.neo4j.websockets.core.data.json.JsonObjectMapper;
 import org.neo4j.graphdb.ConstraintViolationException;
 import org.neo4j.graphdb.NotFoundException;
-import org.neo4j.kernel.api.exceptions.schema.UniqueConstraintViolationKernelException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 /**
- * Created by oliver on 27.08.15.
+ * Created by oliver on 10.11.15.
  */
 @Service
 public class ExceptionToErrorConverter {
@@ -22,17 +21,15 @@ public class ExceptionToErrorConverter {
     }
 
     public Error convert(final Exception exception) {
-        ObjectNode objectNode = jsonObjectMapper.getObjectMapper().createObjectNode();
-
         Class errorClass = exception.getClass();
         Class causeClass;
 
         if (errorClass.equals(ConstraintViolationException.class)) {
             causeClass = exception.getCause().getClass();
 
-            if (causeClass.equals(UniqueConstraintViolationKernelException.class)) {
+            /*if (causeClass.equals(UniqueConstraintViolationKernelException.class)) {
                 return analyseUniqueConstraintViolation((ConstraintViolationException) exception);
-            }
+            }*/
         }
         else if (errorClass.equals(NotFoundException.class)) {
             return analyseNotFound((NotFoundException) exception);
@@ -68,6 +65,7 @@ public class ExceptionToErrorConverter {
         String propertyValue = errorMessage.substring(i + part4.length(), errorMessage.lastIndexOf(part5));
 
         ObjectNode detailsNode = jsonObjectMapper.getObjectMapper().createObjectNode();
+
         detailsNode.put("NodeId", nodeId);
         detailsNode.put("Label", label);
         detailsNode.put("Property", propertyName);
@@ -81,8 +79,6 @@ public class ExceptionToErrorConverter {
     }
 
     protected Error analyseNotFound(final NotFoundException notFoundException) {
-        String errorMessage = notFoundException.getMessage();
-
         ObjectNode detailsNode = jsonObjectMapper.getObjectMapper().createObjectNode();
 
         return new Error(

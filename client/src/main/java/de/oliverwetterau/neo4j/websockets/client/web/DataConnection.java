@@ -1,4 +1,4 @@
-package de.oliverwetterau.neo4j.websockets.client;
+package de.oliverwetterau.neo4j.websockets.client.web;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -122,9 +122,16 @@ public class DataConnection implements Comparable<DataConnection> {
     public boolean isUsable() {
         return isConnected() && TimeUnit.MILLISECONDS.toMinutes(new Date().getTime() - lastUsage.getTime()) <= MAXIMUM_AGE_IN_MINUTES;
     }
+    /**
+     * Sends a text message to the connected Neo4j server without waiting for a reply.
+     * @param message text json message
+     */
+    public void send(final String message) {
+        webSocketHandler.sendMessage(message);
+    }
 
     /**
-     * Sends a message to the connected Neo4j server without waiting for a reply.
+     * Sends a binary message to the connected Neo4j server without waiting for a reply.
      * @param message binary json message
      */
     public void send(final byte[] message) {
@@ -132,7 +139,27 @@ public class DataConnection implements Comparable<DataConnection> {
     }
 
     /**
-     * Sends a message to the connected Neo4j server and waits for a reply.
+     * Sends a text message to the connected Neo4j server and waits for a reply.
+     * @param message text json message
+     * @return result text json message
+     */
+    public String sendWithResult(final String message) {
+        synchronized (webSocketHandler.getNotifyResultObject()) {
+            webSocketHandler.sendMessage(message);
+
+            try {
+                webSocketHandler.getNotifyResultObject().wait(TimeUnit.SECONDS.toMillis(ANSWER_TIMEOUT));
+            }
+            catch (InterruptedException e) {
+                return null;
+            }
+
+            return webSocketHandler.getResultString();
+        }
+    }
+
+    /**
+     * Sends a binary message to the connected Neo4j server and waits for a reply.
      * @param message binary json message
      * @return result binary json message
      */

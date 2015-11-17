@@ -1,4 +1,4 @@
-package de.oliverwetterau.neo4j.websockets.client;
+package de.oliverwetterau.neo4j.websockets.client.server;
 
 /**
  * This exception will be thrown when a server is not available.
